@@ -55,16 +55,13 @@ sed -i "s|^\( *\)\(Provider: \).*|\1\2$PROVIDER|" ~/config.yml.example
 sed -i "s|^\( *\)\(Email: \).*|\1\2$EMAIL|" ~/config.yml.example
 
 # 提取旧配置文件中的 DNSEnv 部分
-DNSEnv=$(awk '/^ *DNSEnv: *$/,/^ *[^ ]/ {if (!/^ *DNSEnv: *$/ && !/^ *[^ ]/) print}' $CONFIG_OLD_PATH)
+DNSEnv=$(awk '/^ *DNSEnv: *$/,/^ *[^ #]/ {if (!/^ *DNSEnv: *$/ && !/^ *[^ #]/) print}' $CONFIG_OLD_PATH)
 
-# 检查提取出来的内容是否非空
-if [ -n "$DNSEnv" ]; then
-  # 在新配置文件中删除旧的 DNSEnv 部分
-  sed -i '/^ *DNSEnv: *$/,/^ *[^ ]/ {/^ *DNSEnv: *$/! {/^ *[^ ]/!d}}' ~/config.yml.example
-  
-  # 将提取出来的 DNSEnv 部分插入到新配置文件中
-  sed -i "/^ *DNSEnv: *$/a $DNSEnv" ~/config.yml.example
-fi
+# 删除新配置文件中的 DNSEnv 部分
+sed -i "/^ *DNSEnv: *$/,/^ *[^ #]/d" ~/config.yml.example
+
+# 在新配置文件中插入旧配置文件的 DNSEnv 部分
+sed -i "/^ *Email: *.*$/a $DNSEnv" ~/config.yml.example
 
 # 重命名新配置文件
 mv ~/config.yml.example $CONFIG_PATH
