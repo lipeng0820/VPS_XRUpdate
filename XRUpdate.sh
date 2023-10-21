@@ -31,6 +31,15 @@ Email=$(grep "^Email:" config.yml.bak | cut -d' ' -f2-)
 
 DNSEnv=$(grep -A 2 "^DNSEnv:" config.yml.bak | tail -n 2)
 
+# 调试输出
+echo "NodeID: $NodeID"
+
+# 如果NodeID为空，则退出脚本
+if [ -z "$NodeID" ]; then
+  echo "NodeID 为空，请检查 config.yml.bak 文件"
+  exit 1
+fi
+
 # 修改新配置文件
 sed -i "s/^PanelType: .*/PanelType: $PanelType/" config.yml
 sed -i "s/^ApiHost: .*/ApiHost: $ApiHost/" config.yml
