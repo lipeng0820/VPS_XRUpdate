@@ -7,20 +7,17 @@ db_host="dbs-connect-cn-0.ip.parts"
 db_name="vedbs_2150"
 db_table="FREED00R_XRUpdate"
 
+# 定义一个函数，用于记录日志并打印消息
 log_and_print() {
   echo "$1"
   echo "$1" >> "$log_file"
 }
 
-# 确保日志文件存在
+# 确保日志文件存在，并清空其内容
 touch "$log_file"
-
-# 清空日志文件内容
 > "$log_file"
 
-log_and_print() {
-  echo "$1" | tee -a "$log_file"
-}
+# ... 此处省略中间部分的代码 ...
 
 log_to_db() {
   local node_id="$1"
@@ -148,3 +145,4 @@ echo "临时文件 XRconf.tmp 已删除"
 node_id="${config["NodeID"]}"
 log_content=$(<"$log_file")
 log_to_db "$node_id" "$log_content"
+
