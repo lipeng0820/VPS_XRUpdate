@@ -30,15 +30,13 @@ done
 dnsEnv=$(yq e ".Nodes[0].ControllerConfig.CertConfig.DNSEnv" ~/config.yml.bak)
 yq eval -i ".Nodes[0].ControllerConfig.CertConfig.DNSEnv = ${dnsEnv}" ~/config.yml.example
 
-# 删除 ALICLOUD_ACCESS_KEY 和 ALICLOUD_SECRET_KEY
-yq eval -i "del(.Nodes[0].ControllerConfig.CertConfig.DNSEnv.ALICLOUD_ACCESS_KEY)" ~/config.yml.example
-yq eval -i "del(.Nodes[0].ControllerConfig.CertConfig.DNSEnv.ALICLOUD_SECRET_KEY)" ~/config.yml.example
+# 删除 ALICLOUD_ACCESS_KEY 和 ALICLOUD_SECRET_KEY 行
+yq eval -i 'del(.Nodes[0].ControllerConfig.CertConfig.DNSEnv.ALICLOUD_ACCESS_KEY)' ~/config.yml.example
+yq eval -i 'del(.Nodes[0].ControllerConfig.CertConfig.DNSEnv.ALICLOUD_SECRET_KEY)' ~/config.yml.example
 
-# 将 CLOUDFLARE_EMAIL 和 CLOUDFLARE_API_KEY 添加到 DNSEnv 下，并按照指定的格式缩进
-cloudflareEmail=$(yq e ".Nodes[0].ControllerConfig.CertConfig.DNSEnv.CLOUDFLARE_EMAIL" ~/config.yml.bak)
-cloudflareApiKey=$(yq e ".Nodes[0].ControllerConfig.CertConfig.DNSEnv.CLOUDFLARE_API_KEY" ~/config.yml.bak)
-yq eval -i ".Nodes[0].ControllerConfig.CertConfig.DNSEnv.CLOUDFLARE_EMAIL = \"${cloudflareEmail}\"" ~/config.yml.example
-yq eval -i ".Nodes[0].ControllerConfig.CertConfig.DNSEnv.CLOUDFLARE_API_KEY = \"${cloudflareApiKey}\"" ~/config.yml.example
+# 为 CLOUDFLARE_EMAIL 和 CLOUDFLARE_API_KEY 添加正确的缩进
+yq eval -i '.Nodes[0].ControllerConfig.CertConfig.DNSEnv.CLOUDFLARE_EMAIL = "lipeng0820@qq.com"' ~/config.yml.example
+yq eval -i '.Nodes[0].ControllerConfig.CertConfig.DNSEnv.CLOUDFLARE_API_KEY = "daa439edca0e359550fe8bc7c295640cd32d2"' ~/config.yml.example
 
 # 将更新后的 config.yml.example 重命名为 config.yml
 mv ~/config.yml.example ~/config.yml
