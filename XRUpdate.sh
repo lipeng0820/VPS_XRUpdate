@@ -53,8 +53,6 @@ sed -i "s|^\( *\)\(CertMode: \).*|\1\2$CERT_MODE|" ~/config.yml.example
 sed -i "s|^\( *\)\(CertDomain: \).*|\1\2$CERT_DOMAIN|" ~/config.yml.example
 sed -i "s|^\( *\)\(Provider: \).*|\1\2$PROVIDER|" ~/config.yml.example
 sed -i "s|^\( *\)\(Email: \).*|\1\2$EMAIL|" ~/config.yml.example
-sed -i "/^ *DNSEnv: *$/,/^$/s|^\( *\)\(CLOUDFLARE_EMAIL: \).*|\1\2$CF_EMAIL|" ~/config.yml.example
-sed -i "/^ *DNSEnv: *$/,/^$/s|^\( *\)\(CLOUDFLARE_API_KEY: \).*|\1\2$CF_API_KEY|" ~/config.yml.example
 
 # 提取旧配置文件中的 DNSEnv 部分并替换新配置文件中的 DNSEnv 部分
 DNSEnv=$(awk '/^ *DNSEnv: *$/,/^ *[^ #]/ {if (!/^ *DNSEnv: *$/ && !/^ *[^ #]/) print}' $CONFIG_OLD_PATH | sed 's/$/\\/')
