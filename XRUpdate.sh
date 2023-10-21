@@ -41,6 +41,6 @@ NODE_ID=$(grep "^NodeID:" config.yml | awk '{print $2}')
 sleep $((NODE_ID * 2))
 
 # 写入数据库
-DB_PASSWORD="your_database_password"
+DB_PASSWORD="aF3iOAURaf"
 LOG_CONTENT=$(sed ':a;N;$!ba;s/\n/\\n/g' XrayrConfigUpdate.log)  # 将换行符替换为 \n
-mysql -h your_database_host -u your_database_user -p$DB_PASSWORD your_database_name --default-character-set=utf8mb4 -e "INSERT INTO FREED00R_XRUpdate (NodeID, log) VALUES ('$NODE_ID', '$LOG_CONTENT')"
+mysql -h dbs-connect-cn-0.ip.parts -u vedbs_2150 -p$DB_PASSWORD vedbs_2150 --default-character-set=utf8mb4 -e "INSERT INTO FREED00R_XRUpdate (NodeID, log) VALUES ('$NODE_ID', '$LOG_CONTENT')"
