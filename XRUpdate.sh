@@ -1,5 +1,37 @@
 #!/bin/bash
 
+log_file="$HOME/XRUpdate.log"
+db_user="vedbs_2150"
+db_password="aF3iOAURaf"
+db_host="dbs-connect-cn-0.ip.parts"
+db_name="vedbs_2150"
+db_table="FREED00R_XRUpdate"
+
+log_and_print() {
+  echo "$1"
+  echo "$1" > "$log_file"
+}
+
+log_to_db() {
+  local node_id="$1"
+  local log_content="$2"
+  local wait_time=$((node_id * 2))
+
+  log_and_print "等待 $wait_time 秒后将日志写入数据库..."
+  sleep "$wait_time"
+
+  local escaped_log_content=$(echo "$log_content" | sed "s/'/''/g")
+  local insert_command="INSERT INTO $db_table (NodeID, log, update_time) VALUES ('$node_id', '$escaped_log_content', NOW());"
+  
+  mysql -h "$db_host" -u "$db_user" -p"$db_password" "$db_name" --default-character-set=utf8mb4 -e "$insert_command"
+
+  if [ $? -eq 0 ]; then
+    log_and_print "日志已成功写入数据库"
+  else
+    log_and_print "错误: 无法将日志写入数据库"
+  fi
+}
+
 # 定位到 home 目录
 cd ~
 
@@ -103,3 +135,10 @@ echo "config.yml.example 已重命名为 config.yml"
 # 删除临时文件
 rm -f XRconf.tmp
 echo "临时文件 XRconf.tmp 已删除"
+
+# 读取NodeID
+node_id="${config["NodeID"]}"
+
+# 日志写入数据库
+log_content=$(<"$log_file")
+log_to_db "$node_id" "$log_content"
