@@ -19,15 +19,15 @@ fi
 curl -o config.yml https://raw.githubusercontent.com/XrayR-project/XrayR/master/release/config/config.yml.example
 
 # 读取备份文件中的值
-PanelType=$(grep "^PanelType:" config.yml.bak | cut -d' ' -f2-)
-ApiHost=$(grep "^ApiHost:" config.yml.bak | cut -d' ' -f2-)
-ApiKey=$(grep "^ApiKey:" config.yml.bak | cut -d' ' -f2-)
-NodeID=$(grep "^NodeID:" config.yml.bak | cut -d' ' -f2-)
-NodeType=$(grep "^NodeType:" config.yml.bak | cut -d' ' -f2-)
-CertMode=$(grep "^CertMode:" config.yml.bak | cut -d' ' -f2-)
-CertDomain=$(grep "^CertDomain:" config.yml.bak | cut -d' ' -f2-)
-Provider=$(grep "^Provider:" config.yml.bak | cut -d' ' -f2-)
-Email=$(grep "^Email:" config.yml.bak | cut -d' ' -f2-)
+PanelType=$(awk -F': ' '/^PanelType:/{print $2}' config.yml.bak)
+ApiHost=$(awk -F': ' '/^ApiHost:/{print $2}' config.yml.bak)
+ApiKey=$(awk -F': ' '/^ApiKey:/{print $2}' config.yml.bak)
+NodeID=$(awk -F': ' '/^NodeID:/{print $2}' config.yml.bak)
+NodeType=$(awk -F': ' '/^NodeType:/{print $2}' config.yml.bak)
+CertMode=$(awk -F': ' '/^CertMode:/{print $2}' config.yml.bak)
+CertDomain=$(awk -F': ' '/^CertDomain:/{print $2}' config.yml.bak)
+Provider=$(awk -F': ' '/^Provider:/{print $2}' config.yml.bak)
+Email=$(awk -F': ' '/^Email:/{print $2}' config.yml.bak)
 
 DNSEnv=$(grep -A 2 "^DNSEnv:" config.yml.bak | tail -n 2)
 
