@@ -23,7 +23,7 @@ cp ~/config.yml ~/config.yml.bak
 # 提取所需的参数值并将它们复制到 config.yml.example
 for param in PanelType ApiHost ApiKey NodeID NodeType CertMode CertDomain Provider Email; do
     value=$(yq e ".Nodes[0].${param}" ~/config.yml.bak)
-    yq eval -i ".Nodes[0].${param} = ${value}" ~/config.yml.example
+    yq eval -i ".Nodes[0].${param} = \"$value\"" ~/config.yml.example
 done
 
 # 替换 DNSEnv 下的两个参数，并删除不需要的参数
