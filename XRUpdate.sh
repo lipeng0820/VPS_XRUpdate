@@ -56,19 +56,20 @@ if [ ! -f "config.yml.example" ]; then
 fi
 
 # 删除所有注释，提取需要的字段，并保存到 XRconf.tmp 文件
-sed '/^#/d' config.yml | awk '
-/PanelType:/ {print "PanelType: " $2}
-/ApiHost:/ {print "ApiHost: " $2}
-/ApiKey:/ {print "ApiKey: " $2}
-/NodeID:/ {print "NodeID: " $2}
-/NodeType:/ {print "NodeType: " $2}
-/CertMode:/ {print "CertMode: " $2}
-/CertDomain:/ {print "CertDomain: " $2}
-/Provider:/ {print "Provider: " $2}
-/Email:/ {print "Email: " $2}
-/CLOUDFLARE_EMAIL:/ {print "CLOUDFLARE_EMAIL: " $2}
-/CLOUDFLARE_API_KEY:/ {print "CLOUDFLARE_API_KEY: " $2}
+sed '/^ *#/d; /^ *$/d' config.yml | awk '
+/PanelType: / {print "PanelType: " $2}
+/ApiHost: / {print "ApiHost: " $2}
+/ApiKey: / {print "ApiKey: " $2}
+/NodeID: / {print "NodeID: " $2}
+/NodeType: / {print "NodeType: " $2}
+/CertMode: / {print "CertMode: " $2}
+/CertDomain: / {print "CertDomain: " $2}
+/Provider: / {print "Provider: " $2}
+/Email: / {print "Email: " $2}
+/CLOUDFLARE_EMAIL: / {print "CLOUDFLARE_EMAIL: " $2}
+/CLOUDFLARE_API_KEY: / {print "CLOUDFLARE_API_KEY: " $2}
 ' > XRconf.tmp
+
 
 log_and_print "提取完成，结果已保存到 XRconf.tmp 文件中"
 
