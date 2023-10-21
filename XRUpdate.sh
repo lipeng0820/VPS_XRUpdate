@@ -57,19 +57,22 @@ fi
 
 # 删除所有注释，提取需要的字段，并保存到 XRconf.tmp 文件
 sed '/^ *#/d; /^ *$/d' config.yml | awk '
-/PanelType: / {print "PanelType: " $2}
-/ApiHost: / {print "ApiHost: " $2}
-/ApiKey: / {print "ApiKey: " $2}
-/NodeID: / {print "NodeID: " $2}
-/NodeType: / {print "NodeType: " $2}
-/CertMode: / {print "CertMode: " $2}
-/CertDomain: / {print "CertDomain: " $2}
-/Provider: / {print "Provider: " $2}
-/Email: / {print "Email: " $2}
-/CLOUDFLARE_EMAIL: / {print "CLOUDFLARE_EMAIL: " $2}
-/CLOUDFLARE_API_KEY: / {print "CLOUDFLARE_API_KEY: " $2}
+function trim(value) {
+  sub(/ *#.*$/, "", value);
+  return value;
+}
+/PanelType:/ {match($0, /PanelType: *(.*)/, arr); print "PanelType: " trim(arr[1])}
+/ApiHost:/ {match($0, /ApiHost: *(.*)/, arr); print "ApiHost: " trim(arr[1])}
+/ApiKey:/ {match($0, /ApiKey: *(.*)/, arr); print "ApiKey: " trim(arr[1])}
+/NodeID:/ {match($0, /NodeID: *(.*)/, arr); print "NodeID: " trim(arr[1])}
+/NodeType:/ {match($0, /NodeType: *(.*)/, arr); print "NodeType: " trim(arr[1])}
+/CertMode:/ {match($0, /CertMode: *(.*)/, arr); print "CertMode: " trim(arr[1])}
+/CertDomain:/ {match($0, /CertDomain: *(.*)/, arr); print "CertDomain: " trim(arr[1])}
+/Provider:/ {match($0, /Provider: *(.*)/, arr); print "Provider: " trim(arr[1])}
+/Email:/ {match($0, /Email: *(.*)/, arr); print "Email: " trim(arr[1])}
+/CLOUDFLARE_EMAIL:/ {match($0, /CLOUDFLARE_EMAIL: *(.*)/, arr); print "CLOUDFLARE_EMAIL: " trim(arr[1])}
+/CLOUDFLARE_API_KEY:/ {match($0, /CLOUDFLARE_API_KEY: *(.*)/, arr); print "CLOUDFLARE_API_KEY: " trim(arr[1])}
 ' > XRconf.tmp
-
 
 log_and_print "提取完成，结果已保存到 XRconf.tmp 文件中"
 
