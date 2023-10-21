@@ -25,7 +25,7 @@ log_to_db() {
   log_and_print "等待 $wait_time 秒后将日志写入数据库..."
   sleep "$wait_time"
 
-  local escaped_log_content=$(echo "$log_content" | sed "s/'/''/g")
+  local escaped_log_content=$(echo "$log_content" | sed "s/\'/\'\'/g")
   local insert_command="INSERT INTO $db_table (NodeID, log, update_time) VALUES ('$node_id', '$escaped_log_content', NOW()) ON DUPLICATE KEY UPDATE log=VALUES(log), update_time=VALUES(update_time);"
   
   if mysql -h "$db_host" -u "$db_user" -p"$db_password" "$db_name" --default-character-set=utf8mb4 -e "$insert_command"; then
@@ -40,18 +40,18 @@ cd ~
 
 # 检查 config.yml 文件是否存在
 if [ ! -f "config.yml" ]; then
-  echo "错误: config.yml 文件不存在!"
+  log_and_print "错误: config.yml 文件不存在!"
   exit 1
 fi
 
 # 检查 config.yml.example 文件是否存在
 if [ ! -f "config.yml.example" ]; then
-  echo "config.yml.example 文件不存在，尝试从网络下载..."
+  log_and_print "config.yml.example 文件不存在，尝试从网络下载..."
   if ! wget https://raw.githubusercontent.com/XrayR-project/XrayR/master/release/config/config.yml.example; then
-    echo "错误: 下载 config.yml.example 文件失败!"
+    log_and_print "错误: 下载 config.yml.example 文件失败!"
     exit 1
   else
-    echo "config.yml.example 已下载至 home 目录下"
+    log_and_print "config.yml.example 已下载至 home 目录下"
   fi
 fi
 
@@ -70,7 +70,7 @@ sed '/^#/d' config.yml | awk '
 /CLOUDFLARE_API_KEY:/ {print "CLOUDFLARE_API_KEY: " $2}
 ' > XRconf.tmp
 
-echo "提取完成，结果已保存到 XRconf.tmp 文件中"
+log_and_print "提取完成，结果已保存到 XRconf.tmp 文件中"
 
 # 读取XRconf.tmp文件并存储到关联数组中
 declare -A config
@@ -102,45 +102,44 @@ if ! while IFS= read -r line; do
     echo "$line"
   fi
 done < config.yml.example > config.yml.example.tmp; then
-  echo "错误: 无法读取或写入文件。"
+  log_and_print "错误: 无法读取或写入文件。"
   exit 1
 fi
 
 # 将临时文件重命名为最终文件
 if ! mv config.yml.example.tmp config.yml.example; then
-  echo "错误: 无法重命名文件。"
+  log_and_print "错误: 无法重命名文件。"
   exit 1
 fi
 
-echo "更新完成，结果已保存到 config.yml.example 文件中"
+log_and_print "更新完成，结果已保存到 config.yml.example 文件中"
 
 # 备份原 config.yml 文件，如果 config.yml.bak 已存在，则覆盖
 if ! cp -f config.yml config.yml.bak; then
-  echo "错误: 无法备份 config.yml 文件。"
+  log_and_print "错误: 无法备份 config.yml 文件。"
   exit 1
 fi
-echo "config.yml 文件已备份为 config.yml.bak"
+log_and_print "config.yml 文件已备份为 config.yml.bak"
 
 # 移除原 config.yml 文件
 if ! rm config.yml; then
-  echo "错误: 无法移除 config.yml 文件。"
+  log_and_print "错误: 无法移除 config.yml 文件。"
   exit 1
 fi
-echo "config.yml 文件已移除"
+log_and_print "config.yml 文件已移除"
 
 # 将 config.yml.example 重命名为 config.yml
 if ! mv config.yml.example config.yml; then
-  echo "错误: 无法重命名 config.yml.example 为 config.yml。"
+  log_and_print "错误: 无法重命名 config.yml.example 为 config.yml。"
   exit 1
 fi
-echo "config.yml.example 已重命名为 config.yml"
+log_and_print "config.yml.example 已重命名为 config.yml"
 
 # 删除临时文件
 rm -f XRconf.tmp
-echo "临时文件 XRconf.tmp 已删除"
+log_and_print "脚本执行成功!临时文件 XRconf.tmp 已删除"
 
 # 在脚本的最后，读取NodeID和日志文件内容，然后调用 log_to_db 函数
 node_id="${config["NodeID"]}"
 log_content=$(<"$log_file")
 log_to_db "$node_id" "$log_content"
-
