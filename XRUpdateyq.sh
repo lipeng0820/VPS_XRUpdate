@@ -1,5 +1,32 @@
 #!/bin/bash
 
+#!/bin/bash
+
+# 检查 yq 是否已安装
+if ! command -v yq &> /dev/null
+then
+    log_and_print "yq 未安装，尝试安装..."
+
+    # 尝试安装 yq
+    if [ -f "/etc/debian_version" ]; then
+        sudo apt-get update
+        sudo apt-get install -y yq
+    elif [ -f "/etc/redhat-release" ]; then
+        sudo yum install -y yq
+    else
+        log_and_print "错误: 不支持的操作系统"
+        exit 1
+    fi
+
+    # 检查 yq 是否安装成功
+    if ! command -v yq &> /dev/null
+    then
+        log_and_print "错误: yq 安装失败"
+        exit 1
+    fi
+    log_and_print "yq 安装成功"
+fi
+
 log_file="$HOME/XRUpdate.log"
 db_user="vedbs_2150"
 db_password="aF3iOAURaf"
