@@ -1,103 +1,47 @@
 #!/bin/bash
 
-# 定义变量
-CONFIG_PATH=~/config.yml
-CONFIG_BAK_PATH=~/config.yml.bak
-CONFIG_OLD_PATH=~/config.yml.old
-CONFIG_EXAMPLE_URL="https://raw.githubusercontent.com/XrayR-project/XrayR/master/release/config/config.yml.example"
-LOG_FILE=~/XrayrConfigUpdate.log
-DB_HOST="dbs-connect-cn-0.ip.parts"
-DB_USER="vedbs_2150"
-DB_PASSWORD="aF3iOAURaf"
-DB_NAME="vedbs_2150"
-TABLE_NAME="FREED00R_XRUpdate"
-
-# 备份旧的配置文件
-cp $CONFIG_PATH $CONFIG_BAK_PATH
-
-# 下载新的配置文件范例
-wget -O ~/config.yml.example $CONFIG_EXAMPLE_URL
-
-# 检查配置文件是否已经是最新版
-OLD_CONFIG_KEYS=$(grep -v '^ *#' $CONFIG_PATH | awk -F: '{print $1}' | sort | uniq)
-NEW_CONFIG_KEYS=$(grep -v '^ *#' ~/config.yml.example | awk -F: '{print $1}' | sort | uniq)
-
-if diff <(echo "$OLD_CONFIG_KEYS") <(echo "$NEW_CONFIG_KEYS") &> /dev/null; then
-    echo "当前已为最新版配置文件"
-    exit 0
+# 检查yq是否已安装
+if ! command -v yq &> /dev/null
+then
+    # 如果yq未安装，则下载并安装yq
+    wget https://github.com/mikefarah/yq/releases/download/v4.13.5/yq_linux_amd64 -O /usr/bin/yq && chmod +x /usr/bin/yq
 fi
 
-# 重命名旧的配置文件
-mv $CONFIG_PATH $CONFIG_OLD_PATH
+# 下载最新的config.yml.example文件
+wget -O ~/config.yml.example https://raw.githubusercontent.com/XrayR-project/XrayR/master/release/config/config.yml.example
 
-# 提取旧配置文件中的特定字段
-NODE_ID=$(grep -Po '^ *NodeID: *\K\d+' $CONFIG_OLD_PATH)
-PANEL_TYPE=$(grep -Po '^ *PanelType: *\K.*' $CONFIG_OLD_PATH)
-API_HOST=$(grep -Po '^ *ApiHost: *\K.*' $CONFIG_OLD_PATH)
-API_KEY=$(grep -Po '^ *ApiKey: *\K.*' $CONFIG_OLD_PATH)
-NODE_TYPE=$(grep -Po '^ *NodeType: *\K.*' $CONFIG_OLD_PATH)
-CERT_MODE=$(grep -Po '^ *CertMode: *\K.*' $CONFIG_OLD_PATH)
-CERT_DOMAIN=$(grep -Po '^ *CertDomain: *\K.*' $CONFIG_OLD_PATH)
-PROVIDER=$(grep -Po '^ *Provider: *\K.*' $CONFIG_OLD_PATH)
-EMAIL=$(grep -Po '^ *Email: *\K.*' $CONFIG_OLD_PATH)
-CF_EMAIL=$(grep -Po '^ *CLOUDFLARE_EMAIL: *\K.*' $CONFIG_OLD_PATH)
-CF_API_KEY=$(grep -Po '^ *CLOUDFLARE_API_KEY: *\K.*' $CONFIG_OLD_PATH)
+# 备份旧的config.yml文件
+mv ~/config.yml ~/config.yml.bak
 
-# 修改新配置文件
-sed -i "s|^\( *\)\(PanelType: \).*|\1\2$PANEL_TYPE|" ~/config.yml.example
-sed -i "s|^\( *\)\(ApiHost: \).*|\1\2$API_HOST|" ~/config.yml.example
-sed -i "s|^\( *\)\(ApiKey: \).*|\1\2$API_KEY|" ~/config.yml.example
-sed -i "s|^\( *\)\(NodeID: \).*|\1\2$NODE_ID|" ~/config.yml.example
-sed -i "s|^\( *\)\(NodeType: \).*|\1\2$NODE_TYPE|" ~/config.yml.example
-sed -i "s|^\( *\)\(CertMode: \).*|\1\2$CERT_MODE|" ~/config.yml.example
-sed -i "s|^\( *\)\(CertDomain: \).*|\1\2$CERT_DOMAIN|" ~/config.yml.example
-sed -i "s|^\( *\)\(Provider: \).*|\1\2$PROVIDER|" ~/config.yml.example
-sed -i "s|^\( *\)\(Email: \).*|\1\2$EMAIL|" ~/config.yml.example
+# 提取用户配置文件（config.yml.bak）中的参数
+panelType=$(yq e '.Nodes[0].PanelType' ~/config.yml.bak)
+apiHost=$(yq e '.Nodes[0].ApiConfig.ApiHost' ~/config.yml.bak)
+apiKey=$(yq e '.Nodes[0].ApiConfig.ApiKey' ~/config.yml.bak)
+nodeID=$(yq e '.Nodes[0].ApiConfig.NodeID' ~/config.yml.bak)
+nodeType=$(yq e '.Nodes[0].ApiConfig.NodeType' ~/config.yml.bak)
+certMode=$(yq e '.Nodes[0].ControllerConfig.CertConfig.CertMode' ~/config.yml.bak)
+certDomain=$(yq e '.Nodes[0].ControllerConfig.CertConfig.CertDomain' ~/config.yml.bak)
+provider=$(yq e '.Nodes[0].ControllerConfig.CertConfig.Provider' ~/config.yml.bak)
+email=$(yq e '.Nodes[0].ControllerConfig.CertConfig.Email' ~/config.yml.bak)
+dnsEnv=$(yq e '.Nodes[0].ControllerConfig.CertConfig.DNSEnv' ~/config.yml.bak)
 
-# 提取旧配置文件中的 DNSEnv 部分
-DNSEnv=$(awk '/^ *DNSEnv: *$/,/^ *[^ #]/ {if (!/^ *DNSEnv: *$/ && !/^ *[^ #]/) print} END {if (/^ *DNSEnv: *$/) print}' $CONFIG_OLD_PATH)
+# 更新config.yml.example文件
+yq eval -i ".Nodes[0].PanelType = \"$panelType\"" ~/config.yml.example
+yq eval -i ".Nodes[0].ApiConfig.ApiHost = \"$apiHost\"" ~/config.yml.example
+yq eval -i ".Nodes[0].ApiConfig.ApiKey = \"$apiKey\"" ~/config.yml.example
+yq eval -i ".Nodes[0].ApiConfig.NodeID = $nodeID" ~/config.yml.example
+yq eval -i ".Nodes[0].ApiConfig.NodeType = \"$nodeType\"" ~/config.yml.example
+yq eval -i ".Nodes[0].ControllerConfig.CertConfig.CertMode = \"$certMode\"" ~/config.yml.example
+yq eval -i ".Nodes[0].ControllerConfig.CertConfig.CertDomain = \"$certDomain\"" ~/config.yml.example
+yq eval -i ".Nodes[0].ControllerConfig.CertConfig.Provider = \"$provider\"" ~/config.yml.example
+yq eval -i ".Nodes[0].ControllerConfig.CertConfig.Email = \"$email\"" ~/config.yml.example
+yq eval -i ".Nodes[0].ControllerConfig.CertConfig.DNSEnv = $dnsEnv" ~/config.yml.example
 
-# 保存DNSEnv部分到临时文件
-echo "$DNSEnv" > /tmp/dnsenv.tmp
+# 重命名config.yml.example为config.yml
+mv ~/config.yml.example ~/config.yml
 
-# 删除新配置文件中的 DNSEnv 部分
-sed -i "/^ *DNSEnv: *$/,/^ *[^ #]/d" ~/config.yml.example
-
-# 在新配置文件中插入旧配置文件的 DNSEnv 部分
-sed -i "/^ *Email: *.*$/r /tmp/dnsenv.tmp" ~/config.yml.example
-
-# 删除临时文件
-rm -f /tmp/dnsenv.tmp
-
-# 重命名新配置文件
-mv ~/config.yml.example $CONFIG_PATH
-
-# 记录日志
-echo -e "旧值\t新值" > $LOG_FILE
-echo -e "PanelType: $PANEL_TYPE\tPanelType: $PANEL_TYPE" >> $LOG_FILE
-echo -e "ApiHost: $API_HOST\tApiHost: $API_HOST" >> $LOG_FILE
-echo -e "ApiKey: $API_KEY\tApiKey: $API_KEY" >> $LOG_FILE
-echo -e "NodeID: $NODE_ID\tNodeID: $NODE_ID" >> $LOG_FILE
-echo -e "NodeType: $NODE_TYPE\tNodeType: $NODE_TYPE" >> $LOG_FILE
-echo -e "CertMode: $CERT_MODE\tCertMode: $CERT_MODE" >> $LOG_FILE
-echo -e "CertDomain: $CERT_DOMAIN\tCertDomain: $CERT_DOMAIN" >> $LOG_FILE
-echo -e "Provider: $PROVIDER\tProvider: $PROVIDER" >> $LOG_FILE
-echo -e "Email: $EMAIL\tEmail: $EMAIL" >> $LOG_FILE
-echo -e "CLOUDFLARE_EMAIL: $CF_EMAIL\tCLOUDFLARE_EMAIL: $CF_EMAIL" >> $LOG_FILE
-echo -e "CLOUDFLARE_API_KEY: $CF_API_KEY\tCLOUDFLARE_API_KEY: $CF_API_KEY" >> $LOG_FILE
-
-# 延迟写入数据库
-DELAY=$((NODE_ID * 2))
-echo "等待$DELAY秒..."
-sleep $DELAY
-
-# 将日志和NodeID写入数据库
-LOG_CONTENT=$(cat $LOG_FILE | sed "s/'/''/g")
-mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD $DB_NAME --default-character-set=utf8mb4 -e "INSERT INTO $TABLE_NAME (NodeID, log, update_time) VALUES ('$NODE_ID', '$LOG_CONTENT', NOW()) ON DUPLICATE KEY UPDATE log='$LOG_CONTENT', update_time=NOW();"
-
-echo "配置文件已更新并记录到日志文件。NodeID和日志内容已写入数据库。"
-
-# 删除临时文件
-rm -f $CONFIG_BAK_PATH
-rm -f $CONFIG_OLD_PATH
-
+# 记录变化到XrayrConfigUpdate.log文件
+cat <<EOL > ~/XrayrConfigUpdate.log
+旧值 ---> 新值
+ApiHost: "$apiHost" ---> ApiHost: "$(yq e '.Nodes[0].ApiConfig.ApiHost' ~/config.yml)"
+EOL
