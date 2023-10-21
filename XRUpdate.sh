@@ -44,17 +44,17 @@ CF_EMAIL=$(grep -Po '^ *CLOUDFLARE_EMAIL: *\K.*' $CONFIG_OLD_PATH)
 CF_API_KEY=$(grep -Po '^ *CLOUDFLARE_API_KEY: *\K.*' $CONFIG_OLD_PATH)
 
 # 修改新配置文件
-sed -i "s/^\( *\)\(PanelType: \).*/\1\2$PANEL_TYPE/" ~/config.yml.example
-sed -i "s/^\( *\)\(ApiHost: \).*/\1\2$API_HOST/" ~/config.yml.example
-sed -i "s/^\( *\)\(ApiKey: \).*/\1\2$API_KEY/" ~/config.yml.example
-sed -i "s/^\( *\)\(NodeID: \).*/\1\2$NODE_ID/" ~/config.yml.example
-sed -i "s/^\( *\)\(NodeType: \).*/\1\2$NODE_TYPE/" ~/config.yml.example
-sed -i "s/^\( *\)\(CertMode: \).*/\1\2$CERT_MODE/" ~/config.yml.example
-sed -i "s/^\( *\)\(CertDomain: \).*/\1\2$CERT_DOMAIN/" ~/config.yml.example
-sed -i "s/^\( *\)\(Provider: \).*/\1\2$PROVIDER/" ~/config.yml.example
-sed -i "s/^\( *\)\(Email: \).*/\1\2$EMAIL/" ~/config.yml.example
-sed -i "/^ *DNSEnv: *$/,/^$/s/^\( *\)\(CLOUDFLARE_EMAIL: \).*/\1\2$CF_EMAIL/" ~/config.yml.example
-sed -i "/^ *DNSEnv: *$/,/^$/s/^\( *\)\(CLOUDFLARE_API_KEY: \).*/\1\2$CF_API_KEY/" ~/config.yml.example
+sed -i "s|^\( *\)\(PanelType: \).*|\1\2$PANEL_TYPE|" ~/config.yml.example
+sed -i "s|^\( *\)\(ApiHost: \).*|\1\2$API_HOST|" ~/config.yml.example
+sed -i "s|^\( *\)\(ApiKey: \).*|\1\2$API_KEY|" ~/config.yml.example
+sed -i "s|^\( *\)\(NodeID: \).*|\1\2$NODE_ID|" ~/config.yml.example
+sed -i "s|^\( *\)\(NodeType: \).*|\1\2$NODE_TYPE|" ~/config.yml.example
+sed -i "s|^\( *\)\(CertMode: \).*|\1\2$CERT_MODE|" ~/config.yml.example
+sed -i "s|^\( *\)\(CertDomain: \).*|\1\2$CERT_DOMAIN|" ~/config.yml.example
+sed -i "s|^\( *\)\(Provider: \).*|\1\2$PROVIDER|" ~/config.yml.example
+sed -i "s|^\( *\)\(Email: \).*|\1\2$EMAIL|" ~/config.yml.example
+sed -i "/^ *DNSEnv: *$/,/^$/s|^\( *\)\(CLOUDFLARE_EMAIL: \).*|\1\2$CF_EMAIL|" ~/config.yml.example
+sed -i "/^ *DNSEnv: *$/,/^$/s|^\( *\)\(CLOUDFLARE_API_KEY: \).*|\1\2$CF_API_KEY|" ~/config.yml.example
 
 # 重命名新配置文件
 mv ~/config.yml.example $CONFIG_PATH
