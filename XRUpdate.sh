@@ -9,8 +9,14 @@ db_table="FREED00R_XRUpdate"
 
 log_and_print() {
   echo "$1"
-  echo "$1" > "$log_file"
+  echo "$1" >> "$log_file"
 }
+
+# 确保日志文件存在
+touch "$log_file"
+
+# 清空日志文件内容
+> "$log_file"
 
 log_to_db() {
   local node_id="$1"
