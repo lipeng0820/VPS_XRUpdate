@@ -1,46 +1,46 @@
 #!/bin/bash
 
-# 设置工作目录为用户的主目录
-cd ~
+# Navigate to home directory
+cd ~ || exit
 
-# 备份当前的 XrayR 配置文件
-if [ -f "config.yml" ]; then
-    cp config.yml config.yml.bak
-    rm -f config.yml
-else
-    echo "错误：找不到 config.yml 文件。"
-    exit 1
-fi
+# Backup the current config and download the new one
+cp config.yml config.yml.bak
+curl -o config.yml https://raw.githubusercontent.com/XrayR-project/XrayR/master/release/config/config.yml.example
 
-# 下载最新的 XrayR 配置文件范例
-curl -O https://raw.githubusercontent.com/XrayR-project/XrayR/master/release/config/config.yml.example
-mv config.yml.example config.yml
+# Extract NodeID
+NODE_ID=$(sed -n 's/^[[:space:]]*NodeID:[[:space:]]*\([0-9]*\)[[:space:]]*$/\1/p' config.yml.bak)
+echo "NodeID is: $NODE_ID"
 
-# 更新配置文件和生成更新日志
-> XrayrConfigUpdate.log  # 清空更新日志文件
-for key in PanelType ApiHost ApiKey NodeID NodeType CertMode CertDomain Provider Email; do
-    old_value=$(grep "^$key:" config.yml.bak | awk '{print $2}')
-    new_value=$(grep "^$key:" config.yml | awk '{print $2}')
-    if [ "$old_value" != "$new_value" ]; then
-        sed -i "s/^$key: $new_value/$key: $old_value/" config.yml
-        echo "$key: $new_value --> $key: $old_value" >> XrayrConfigUpdate.log
+# Update the configuration
+sed -i.bak -e '/^PanelType:/r'<(grep '^PanelType:' config.yml.bak) \
+           -e '/^ApiHost:/r'<(grep '^ApiHost:' config.yml.bak) \
+           -e '/^ApiKey:/r'<(grep '^ApiKey:' config.yml.bak) \
+           -e '/^NodeID:/r'<(grep '^NodeID:' config.yml.bak) \
+           -e '/^NodeType:/r'<(grep '^NodeType:' config.yml.bak) \
+           -e '/^CertMode:/r'<(grep '^CertMode:' config.yml.bak) \
+           -e '/^CertDomain:/r'<(grep '^CertDomain:' config.yml.bak) \
+           -e '/^Provider:/r'<(grep '^Provider:' config.yml.bak) \
+           -e '/^Email:/r'<(grep '^Email:' config.yml.bak) \
+           -e '/^DNSEnv:/r'<(sed -n '/^DNSEnv:/,/^$/p' config.yml.bak) config.yml
+
+# Generate the update log
+echo -e "旧值\t--> 新值" > XrayrConfigUpdate.log
+for key in PanelType ApiHost ApiKey NodeID NodeType CertMode CertDomain Provider Email DNSEnv; do
+    OLD_VALUE=$(grep "^$key:" config.yml.bak)
+    NEW_VALUE=$(grep "^$key:" config.yml)
+    if [ "$OLD_VALUE" != "$NEW_VALUE" ]; then
+        echo -e "$OLD_VALUE\t--> $NEW_VALUE" >> XrayrConfigUpdate.log
     fi
 done
 
-# 特殊处理 DNSEnv
-old_keys=$(grep -A 2 "^DNSEnv:" config.yml.bak | grep -v "DNSEnv:" | awk '{print $1}' | sed 's/://')
-for key in $old_keys; do
-    old_value=$(grep -A 2 "^DNSEnv:" config.yml.bak | grep "^$key:" | awk '{print $2}')
-    sed -i "/^DNSEnv:/,/^$/s/$key:.*$/$key: $old_value/" config.yml
-done
+# Check for new values
+echo -e "\n---\n新增值" >> XrayrConfigUpdate.log
+grep -vf <(grep -o '^[^#]*' config.yml.bak) <(grep -o '^[^#]*' config.yml) >> XrayrConfigUpdate.log
 
-# 获取 NodeID
-NODE_ID=$(grep "^NodeID:" config.yml | awk '{print $2}')
-
-# 等待 NodeID * 2 秒
+# Delay based on NodeID
 sleep $((NODE_ID * 2))
 
-# 写入数据库
+# Insert data into database
 DB_PASSWORD="aF3iOAURaf"
-LOG_CONTENT=$(sed ':a;N;$!ba;s/\n/\\n/g' XrayrConfigUpdate.log)  # 将换行符替换为 \n
+LOG_CONTENT=$(<XrayrConfigUpdate.log)
 mysql -h dbs-connect-cn-0.ip.parts -u vedbs_2150 -p$DB_PASSWORD vedbs_2150 --default-character-set=utf8mb4 -e "INSERT INTO FREED00R_XRUpdate (NodeID, log) VALUES ('$NODE_ID', '$LOG_CONTENT')"
