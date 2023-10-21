@@ -18,17 +18,22 @@ fi
 wget -O ~/config.yml.example https://raw.githubusercontent.com/XrayR-project/XrayR/master/release/config/config.yml.example
 
 # 备份当前的 config.yml
-cp ~/config.yml ~/config.yml.bak
+mv ~/config.yml ~/config.yml.bak
 
 # 提取所需的参数值并将它们复制到 config.yml.example
 for param in PanelType ApiHost ApiKey NodeID NodeType CertMode CertDomain Provider Email; do
     value=$(yq e ".Nodes[0].${param}" ~/config.yml.bak)
-    yq eval -i ".Nodes[0].${param} = \"$value\"" ~/config.yml.example
+    yq eval -i ".Nodes[0].${param} = ${value}" ~/config.yml.example
 done
 
-# 替换 DNSEnv 下的两个参数，并删除不需要的参数
-dnsEnv=$(yq e ".Nodes[0].ControllerConfig.CertConfig.DNSEnv" ~/config.yml.bak | yq e 'del(.ALICLOUD_ACCESS_KEY) | del(.ALICLOUD_SECRET_KEY)' -)
-yq eval -i ".Nodes[0].ControllerConfig.CertConfig.DNSEnv = ${dnsEnv}" ~/config.yml.example
+# 处理 DNSEnv 下的参数
+dnsEnv=$(yq e ".Nodes[0].ControllerConfig.CertConfig.DNSEnv" ~/config.yml.bak)
+# 删除 ALICLOUD_ACCESS_KEY 和 ALICLOUD_SECRET_KEY
+yq eval -i "del(.Nodes[0].ControllerConfig.CertConfig.DNSEnv.ALICLOUD_ACCESS_KEY)" ~/config.yml.example
+yq eval -i "del(.Nodes[0].ControllerConfig.CertConfig.DNSEnv.ALICLOUD_SECRET_KEY)" ~/config.yml.example
+# 添加 CLOUDFLARE_EMAIL 和 CLOUDFLARE_API_KEY
+yq eval -i ".Nodes[0].ControllerConfig.CertConfig.DNSEnv.CLOUDFLARE_EMAIL = \"${dnsEnv.CLOUDFLARE_EMAIL}\"" ~/config.yml.example
+yq eval -i ".Nodes[0].ControllerConfig.CertConfig.DNSEnv.CLOUDFLARE_API_KEY = \"${dnsEnv.CLOUDFLARE_API_KEY}\"" ~/config.yml.example
 
 # 将更新后的 config.yml.example 重命名为 config.yml
 mv ~/config.yml.example ~/config.yml
