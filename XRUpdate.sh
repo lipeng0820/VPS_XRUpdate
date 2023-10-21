@@ -45,3 +45,4 @@ for param in PanelType ApiHost ApiKey NodeID NodeType CertMode CertDomain Provid
     newValue=$(yq e ".Nodes[0].${param}" ~/config.yml)
     echo "${param}: ${oldValue} ---> ${param}: ${newValue}" >> ~/XrayrConfigUpdate.log
 done
+#2350
