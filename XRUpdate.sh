@@ -80,7 +80,6 @@ sleep $DELAY
 
 # 将日志和NodeID写入数据库
 LOG_CONTENT=$(cat $LOG_FILE | sed "s/'/''/g")
-mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD $DB_NAME --default-character-set=utf8mb4 -e "INSERT INTO $TABLE_NAME (NodeID, log) VALUES ('$NODE_ID', '$LOG_CONTENT') ON DUPLICATE KEY UPDATE log='$LOG_CONTENT';"
+mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD $DB_NAME --default-character-set=utf8mb4 -e "INSERT INTO $TABLE_NAME (NodeID, log, update_time) VALUES ('$NODE_ID', '$LOG_CONTENT', NOW()) ON DUPLICATE KEY UPDATE log='$LOG_CONTENT', update_time=NOW();"
 
 echo "配置文件已更新并记录到日志文件。NodeID和日志内容已写入数据库。"
-
