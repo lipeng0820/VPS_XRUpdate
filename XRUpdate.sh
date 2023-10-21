@@ -7,6 +7,33 @@ db_host="dbs-connect-cn-0.ip.parts"
 db_name="vedbs_2150"
 db_table="FREED00R_XRUpdate"
 
+# 检测操作系统类型
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    OS=$ID
+elif type lsb_release > /dev/null 2>&1; then
+    OS=$(lsb_release -si)
+else
+    OS=$(uname -s)
+fi
+
+# 转换为小写
+OS=${OS,,}
+
+# 检测是否安装了gawk
+if ! command -v gawk &> /dev/null; then
+    echo "gawk could not be found, installing now..."
+    if [ "$OS" == "ubuntu" ] || [ "$OS" == "debian" ]; then
+        sudo apt-get update
+        sudo apt-get install -y gawk
+    elif [ "$OS" == "centos" ]; then
+        sudo yum install -y gawk
+    else
+        echo "Unsupported OS: $OS"
+        exit 1
+    fi
+fi
+
 # 定义一个函数，用于记录日志并打印消息
 log_and_print() {
   echo "$1"
