@@ -18,6 +18,10 @@ touch "$log_file"
 # 清空日志文件内容
 > "$log_file"
 
+log_and_print() {
+  echo "$1" | tee -a "$log_file"
+}
+
 log_to_db() {
   local node_id="$1"
   local log_content="$2"
@@ -29,9 +33,7 @@ log_to_db() {
   local escaped_log_content=$(echo "$log_content" | sed "s/'/''/g")
   local insert_command="INSERT INTO $db_table (NodeID, log, update_time) VALUES ('$node_id', '$escaped_log_content', NOW()) ON DUPLICATE KEY UPDATE log=VALUES(log), update_time=VALUES(update_time);"
   
-  mysql -h "$db_host" -u "$db_user" -p"$db_password" "$db_name" --default-character-set=utf8mb4 -e "$insert_command"
-
-  if [ $? -eq 0 ]; then
+  if mysql -h "$db_host" -u "$db_user" -p"$db_password" "$db_name" --default-character-set=utf8mb4 -e "$insert_command"; then
     log_and_print "日志已成功写入数据库"
   else
     log_and_print "错误: 无法将日志写入数据库"
@@ -142,9 +144,7 @@ echo "config.yml.example 已重命名为 config.yml"
 rm -f XRconf.tmp
 echo "临时文件 XRconf.tmp 已删除"
 
-# 读取NodeID
+# 在脚本的最后，读取NodeID和日志文件内容，然后调用 log_to_db 函数
 node_id="${config["NodeID"]}"
-
-# 日志写入数据库
 log_content=$(<"$log_file")
 log_to_db "$node_id" "$log_content"
