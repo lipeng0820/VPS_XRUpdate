@@ -17,8 +17,6 @@ log_and_print() {
 touch "$log_file"
 > "$log_file"
 
-# ... 此处省略中间部分的代码 ...
-
 log_to_db() {
   local node_id="$1"
   local log_content="$2"
