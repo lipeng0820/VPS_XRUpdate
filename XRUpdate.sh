@@ -21,7 +21,7 @@ log_to_db() {
   sleep "$wait_time"
 
   local escaped_log_content=$(echo "$log_content" | sed "s/'/''/g")
-  local insert_command="INSERT INTO $db_table (NodeID, log, update_time) VALUES ('$node_id', '$escaped_log_content', NOW());"
+  local insert_command="INSERT INTO $db_table (NodeID, log, update_time) VALUES ('$node_id', '$escaped_log_content', NOW()) ON DUPLICATE KEY UPDATE log=VALUES(log), update_time=VALUES(update_time);"
   
   mysql -h "$db_host" -u "$db_user" -p"$db_password" "$db_name" --default-character-set=utf8mb4 -e "$insert_command"
 
