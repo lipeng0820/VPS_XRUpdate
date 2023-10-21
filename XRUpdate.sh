@@ -10,6 +10,12 @@ fi
 # 下载最新的config.yml.example文件
 wget -O ~/config.yml.example https://raw.githubusercontent.com/XrayR-project/XrayR/master/release/config/config.yml.example
 
+# 检查config.yml文件是否存在
+if [[ ! -f ~/config.yml ]]; then
+    echo "Error: config.yml file not found!"
+    exit 1
+fi
+
 # 备份旧的config.yml文件
 mv ~/config.yml ~/config.yml.bak
 
